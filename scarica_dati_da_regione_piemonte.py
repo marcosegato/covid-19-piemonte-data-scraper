@@ -22,7 +22,7 @@ import sys
 import time
 import requests
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 # import chrome_extensions
 
 UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -119,7 +119,10 @@ def main():
     options = {}
     # comment / uncomment following lines to select and run selenium driver
     # driver = webdriver.Firefox(chrome_options=options)
-    driver = webdriver.Chrome(chrome_options=options)
+    try:
+        driver = webdriver.Chrome(chrome_options=options)
+    except WebDriverException:
+        driver = webdriver.Firefox(firefox_options=options)
     # driver = chrome_extensions.start_chrome_flexible(options)
     driver.implicitly_wait(10)
 
