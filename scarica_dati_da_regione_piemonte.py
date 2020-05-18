@@ -16,14 +16,13 @@ csv file has following columns
 not available data have the value -1
 """
 import csv
-from datetime import datetime
 import os
+from pathlib import Path
 import sys
 import time
 import requests
-from pathlib import Path
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium.common.exceptions import TimeoutException
 # import chrome_extensions
 
 UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -58,10 +57,11 @@ def load_comuni(datafolder):
     return comuni
 
 
-def get_ISTAT_code_data(driver, comuni, rowlen, key):
-    # get the data related to the ISTAT code key
-    # -1 means missing data
-
+def get_istat_code_data(driver, comuni, rowlen, key):
+    """
+    get the data related to the ISTAT code key
+    -1 means missing data
+    """
     # javascript code for getting the data associated to each ISTAT code
     get_value_function = "return classificationData[arguments[0]];"
 
@@ -118,10 +118,8 @@ def main():
     # if required, add specific elenium webdriver options to options dictionary
     options = {}
     # comment / uncomment following lines to select and run selenium driver
-    try:
-        driver = webdriver.Chrome(chrome_options=options)
-    except WebDriverException:
-        driver = webdriver.Firefox(firefox_options=options)
+    # driver = webdriver.Firefox(chrome_options=options)
+    driver = webdriver.Chrome(chrome_options=options)
     # driver = chrome_extensions.start_chrome_flexible(options)
     driver.implicitly_wait(10)
 
@@ -148,10 +146,13 @@ def main():
         sys.exit()
 
     # create csv writer
-    today = datetime.strftime(datetime.now(), "%Y_%m_%d")
-    ofile = Path(datafolder) / ("dati_" + today + "_da_regione_piemonte.csv")
-
-    with open(ofile, 'wt') as fout:
+    # today = datetime.strftime(datetime.now(), "%Y_%m_%d")
+    # ofile = Path(datafolder) / ("dati_" + today + "_da_regione_piemonte.csv")
+    # temporary name
+    tmpfile = Path(datafolder) / ("dati_tmp_da_regione_piemonte.csv")
+    # the most recent date found in the map is saved in last_date
+    last_date = "2020/01/01"
+    with open(tmpfile, 'wt') as fout:
         writer = csv.writer(fout, delimiter=";")
         # write file header
         row = ["Comune", "Codice ISTAT", "Abitanti",
@@ -160,8 +161,16 @@ def main():
 
         # loop on all the comuni via ISTAT code to get related data
         for key in keys:
-            row = get_ISTAT_code_data(driver, comuni, len(row), key)
+            row = get_istat_code_data(driver, comuni, len(row), key)
             writer.writerow(row)
+            if row[5] > last_date:
+                last_date = row[5]
+
+    # last date is used to create output file name
+    last_date = last_date.replace("/", "_")
+    ofile = Path(datafolder) / ("dati_" + last_date +
+                                "_da_regione_piemonte.csv")
+    os.rename(tmpfile, ofile)
 
     driver.close()
     driver.quit()
