@@ -15,9 +15,9 @@ PROV = {"001": "TO", "002": "VC", "003": "NO", "004": "CN", "005": "AT",
 
 COD_PIEMONTE = '01'
 
-COLONNE = ['Ente', 'Tipo', 'Provincia', 'Positivi',
-           'Positivi 1000 abitanti',
-           'Abitanti', 'Data', 'Codice ISTAT', 'ASL']
+COLONNE = ['Ente', 'Tipo', 'Provincia', 'ASL', 'Codice ISTAT', 'Abitanti',
+           'Positivi', 'Positivi 1000 abitanti', 'Delta positivi',
+           'Delta positivi 1000 abitanti', 'Data']
 
 
 def provincia(row):
@@ -67,7 +67,7 @@ def aggrega_per_province(dfall, popolazione):
     # ordina le colonne
     somme = somme.reindex(columns=COLONNE)
     # ritorna il dataset
-    print("Righe per provincie e regione", somme.shape[0])
+    print("Numero righe per provincie e regione", somme.shape[0])
     return somme
 
 
@@ -81,7 +81,12 @@ def aggrega_per_asl(dfall, popolazione, asl):
     # positivi per provincia e per regione
     per_asl = dfall.groupby(['Data', 'ASL'],
                             as_index=False).Positivi.sum()
+    # rimuovi le righe con ASL = " ", che derivano dalle righe in dfall
+    # relative a province e Regione
+    idxs = per_asl[per_asl['ASL'] == " "].index
+    per_asl.drop(idxs, inplace=True)
     # popolazione per ogni ASL
+
     abitanti = popolazione.groupby(['ASL'],
                                    as_index=False).Abitanti.sum()
 
@@ -98,12 +103,12 @@ def aggrega_per_asl(dfall, popolazione, asl):
                                          per_asl['Abitanti']).round(2)
     per_asl['Ente'] = per_asl['ASL']
     per_asl['Tipo'] = 'ASL'
-    per_asl['Provincia'] = "N/A"
+    per_asl['Provincia'] = "ASL"
     # ordina le colonne
     per_asl = per_asl.reindex(columns=COLONNE)
     # ritorna il dataset
-    print("Righe per ASL", per_asl.shape[0])
-    return per_asl, sommario_asl
+    print("Numero righe per ASL", per_asl.shape[0])
+    return per_asl, sommario_asl.shape[0]
 
 
 def carica_asl():
@@ -115,8 +120,9 @@ def carica_asl():
     colonne = ['CODICE AZIENDA', 'DENOMINAZIONE AZIENDA', 'CODICE COMUNE']
     ifile = Path("data") / ("asl_piemonte.csv")
     asl = pd.read_csv(ifile, sep=";",
-                      dtype={"CODICE COMUNE": "str",
-                             "CODICE AZIENDA": "str"},
+                      dtype={"CODICE COMUNE": "string",
+                             "CODICE AZIENDA": "string",
+                             "DENOMINAZIONE AZIENDA": "string"},
                       usecols=colonne)
     return asl
 
@@ -125,15 +131,23 @@ def aggiungi_delta_positivi(dfall, prima_data):
     # aggiungi in ogni riga la differenza in positivi su 1000 abitanti
     # rispetto al giorno Precedente
     dfall['Precedente'] = 0
-    dfall['Delta'] = 0
+    dfall['Precedente 1000'] = 0
+    dfall['Delta positivi'] = 0
+    dfall['Delta positivi 1000 abitanti'] = 0
     # usa shift per salvare il valore del giorno precedente
-    dfall['Precedente'] = dfall['Positivi 1000 abitanti'].shift(1)
+    dfall['Precedente'] = dfall['Positivi'].shift(1)
+    dfall['Precedente 1000'] = dfall['Positivi 1000 abitanti'].shift(1)
     # per il primo giorno assumi valore giorno precedente = valore attuale
     dfall.loc[dfall['Data'] == prima_data, 'Precedente'] = \
+        dfall.loc[dfall['Data'] == prima_data, 'Positivi']
+    dfall.loc[dfall['Data'] == prima_data, 'Precedente 1000'] = \
         dfall.loc[dfall['Data'] == prima_data, 'Positivi 1000 abitanti']
-    dfall['Delta'] = (dfall['Positivi 1000 abitanti'] -
-                      dfall['Precedente']).round(2)
-    dfall.drop(['Precedente'], axis=1, inplace=True)
+    # calcola le differenze rispetto al giorno precedente
+    dfall['Delta positivi'] = (dfall['Positivi'] -
+                               dfall['Precedente']).astype(int)
+    dfall['Delta positivi 1000 abitanti'] = (dfall['Positivi 1000 abitanti'] -
+                                             dfall['Precedente 1000']).round(2)
+    dfall.drop(['Precedente', 'Precedente 1000'], axis=1, inplace=True)
     return dfall
 
 
@@ -142,21 +156,17 @@ def carica_dati_da_regione_piemonte():
     carica i dati dei positivi dai file scaricati dal sito della Regione
     """
     # elenco dei file csv con i dati dei positivi
-    # ifiles = sorted(glob.glob("data/dati*.csv"))
     ifiles = sorted(Path('data').glob("dati*_da_regione_piemonte.csv"))
-    # il primo file ha anche le informazione sul numero abitanti per comune
-    print(ifiles[0])
-    dfall = pd.read_csv(ifiles[0], sep=";",
-                        dtype={"Codice ISTAT": "str"})
-
-    # carica i file con i dati
-    for ifile in ifiles[1:]:
-        print(ifile)
-        df1 = pd.read_csv(ifile, sep=";",
-                          dtype={"Codice ISTAT": "str"})
-        dfall = pd.concat([dfall, df1], axis=0)
-        del df1
-    print("Numero righe comuni ", dfall.shape[0])
+    # read all the files into a dataframe array
+    dfall = pd.concat((pd.read_csv(ifile, sep=";",
+                                   dtype={"Comune": "string",
+                                          "Codice ISTAT": "string",
+                                          "Abitanti": "int64",
+                                          "Positivi": "int64",
+                                          "Rapporto": "float64",
+                                          "Data": "object"
+                                          }) for ifile in ifiles), axis=0)
+    # print("Numero righe comuni ", dfall.shape[0])
 
     # tipo ente è comune
     dfall['Tipo'] = 'COM'
@@ -173,10 +183,13 @@ def main():
     """
     aggrega i dati in un unico file
     """
-    # opzione da definire per evitare noiosi messaggi di errore
-    pd.set_option('mode.chained_assignment', None)
 
+    # carica i dati sui contagi per comune e data
     dfall = carica_dati_da_regione_piemonte()
+
+    # ottieni popolazione
+    prima_data = dfall['Data'].min()
+    col_pop = ['Abitanti', 'Codice ISTAT', 'Provincia', 'ASL']
 
     # carica i dati delle ASL
     asl = carica_asl()
@@ -187,12 +200,17 @@ def main():
     # rimuovi le colonne non utili
     dfall.drop(['CODICE AZIENDA', 'CODICE COMUNE', 'DENOMINAZIONE AZIENDA'],
                axis=1, inplace=True)
-    print("Numero righe comuni con ASL", dfall.shape[0])
+    # print("Numero righe comuni con ASL", dfall.shape[0])
 
     # ottieni popolazione
     prima_data = dfall['Data'].min()
     col_pop = ['Abitanti', 'Codice ISTAT', 'Provincia', 'ASL']
     popolazione = dfall[dfall['Data'] == prima_data][col_pop].reset_index()
+
+    print("Numero giorni ", dfall['Data'].nunique())
+    print("Numero Comuni %d Province + Regione %d ASL %d" %
+          (popolazione.shape[0], len(PROV) + 1,
+           asl['CODICE AZIENDA'].nunique()))
 
     # merge dataset con popolazione per avere numero abitanti in ogni riga
     dfall = pd.merge(dfall, popolazione, on='Codice ISTAT')
@@ -204,7 +222,8 @@ def main():
                   'Provincia_y': 'Provincia'},
                  axis=1, inplace=True)
     dfall = dfall.reindex(columns=COLONNE)
-    print("Numero righe comuni con popolazione", dfall.shape[0])
+    # print("Numero righe comuni con popolazione", dfall.shape[0])
+    print("Numero righe comuni ", dfall.shape[0])
 
     # calcola positivi 1000 abitanti
     dfall['Positivi 1000 abitanti'] = ((1000 * dfall['Positivi']) /
@@ -216,14 +235,13 @@ def main():
     print("Numero righe comuni, province, regione ", dfall.shape[0])
 
     # aggiungi i dati di ASL
-    per_asl, tutte_asl = aggrega_per_asl(dfall, popolazione, asl)
+    per_asl, len_asl = aggrega_per_asl(dfall, popolazione, asl)
     dfall = pd.concat([dfall, per_asl], axis=0)
     print("Numero righe comuni, province, regione, ASL ", dfall.shape[0])
 
-    print("Numero comuni ", popolazione.shape[0])
-    print("Numero province + regione ", len(PROV) + 1)
-    print("Numero ASL", tutte_asl.shape[0])
-    print("Numero giorni ", dfall['Data'].nunique())
+    # print("Numero comuni ", popolazione.shape[0])
+    # print("Numero province + regione ", len(PROV) + 1)
+    # print("Numero ASL", len_asl)
 
     # ordina il dataset
     dfall.sort_values(by=['Tipo', 'Ente', 'Data'], inplace=True)
@@ -233,9 +251,10 @@ def main():
     dfall = aggiungi_delta_positivi(dfall, prima_data)
 
     # crea nome file output e scrivi il dataset
-    last = dfall['Data'].max().replace("/", "_")
+    # last = dfall['Data'].max().replace("/", "_")
     # today = datetime.strftime(datetime.now(), "%Y_%m_%d")
-    ofile = Path("data") / ("dati_per_tutto_il_periodo_" + last + ".csv")
+    # ofile = Path("data") / ("dati_per_tutto_il_periodo_" + last + ".csv")
+    ofile = Path("data") / ("dati_per_tutto_il_periodo_ultimo.csv")
     dfall.to_csv(ofile, index=False, sep=";")
 
 
