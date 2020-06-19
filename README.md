@@ -28,7 +28,9 @@ utilizza il pacchetto Selenium per richiedere la pagina contenente la mappa al s
 ## Aggregazione di tutti i dati in unico file
 A partire dal giorno 10 maggio 2020 è caricato nella cartella data un file in formato CSV con nome
 
-con tutti i dati disponibili dal 25 marzo 2020 fino alla data indicata nel nome del file.
+dati_per_tutto_il_periodo_ultimo.csv
+
+con tutti i dati disponibili dal 25 marzo 2020 fino alla data di ultimo aggiornamento del file.
 
 Sono inoltre presenti i dati aggregati per provincia, intera regione e ASL.
 
