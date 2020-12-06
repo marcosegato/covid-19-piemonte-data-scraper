@@ -31,9 +31,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       # Prepare Selenium
-      - name: Prepare Selenium
+      #- name: Prepare Selenium
         # https://github.com/marketplace/actions/setup-chromedriver
-        uses: nanasess/setup-chromedriver@master
+      #  uses: nanasess/setup-chromedriver@master
       # Launch browser
       - name: Launch browser
         run: |
