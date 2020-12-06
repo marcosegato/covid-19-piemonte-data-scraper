@@ -124,7 +124,7 @@ def main():
     except WebDriverException:
         driver = webdriver.Firefox(firefox_options=options)
     # driver = chrome_extensions.start_chrome_flexible(options)
-    driver.implicitly_wait(10)
+    #driver.implicitly_wait(10)
 
 # navigate
     try:
