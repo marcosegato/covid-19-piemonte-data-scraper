@@ -35,19 +35,6 @@ jobs:
       - name: Get data
         run: |
           python scarica_dati_da_regione_piemonte.py
-      # Commit & Push
-      - name: Commit a new report (if necessary)
-        run: |
-          echo "Checking data on: `date`"
-          git config --global user.name 'Covid Piemonte Bot'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -am "Refresh data on: `date`"
-          git push
-        env:
-          TZ: Europe/Rome  
-      # Aggregate data
-      - name: Aggregate data
-        run: |
           python aggrega_dati.py
       
       # Commit & Push
