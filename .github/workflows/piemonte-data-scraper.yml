@@ -12,7 +12,7 @@ jobs:
     # Name of the Job
     name: Scrape data
     # Set the type of machine to run on
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       # Check out a copy of this repository on the ubuntu-latest machine
