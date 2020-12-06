@@ -120,9 +120,9 @@ def carica_asl():
     colonne = ['CODICE AZIENDA', 'DENOMINAZIONE AZIENDA', 'CODICE COMUNE']
     ifile = Path("data") / ("asl_piemonte.csv")
     asl = pd.read_csv(ifile, sep=";",
-                      dtype={"CODICE COMUNE": "string",
-                             "CODICE AZIENDA": "string",
-                             "DENOMINAZIONE AZIENDA": "string"},
+                      dtype={"CODICE COMUNE": "str",
+                             "CODICE AZIENDA": "str",
+                             "DENOMINAZIONE AZIENDA": "str"},
                       usecols=colonne)
     return asl
 
