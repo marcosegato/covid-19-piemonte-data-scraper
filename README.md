@@ -1,5 +1,5 @@
-
-<hr>
+![piemonte-data-scraper](https://github.com/marcosegato/covid-19-piemonte-1/workflows/piemonte-data-scraper/badge.svg)
+[![GitHub commit](https://img.shields.io/github/last-commit/marcosegato/covid-19-piemonte-1)](https://github.com/marcosegato/covid-19-piemonte-1/commits/master)
 
 # Scopo del repository
 
