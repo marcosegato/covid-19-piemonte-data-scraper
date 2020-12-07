@@ -48,3 +48,8 @@ jobs:
           git push
         env:
           TZ: Europe/Rome
+
+      # Update data in the website
+      - name: Update data in the website
+        run: |
+          curl https://marcosegato.altervista.org/covid19piemonte/import.php
