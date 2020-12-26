@@ -119,7 +119,7 @@ def carica_asl():
     """
     colonne = ['CODICE AZIENDA', 'DENOMINAZIONE AZIENDA', 'CODICE COMUNE']
     ifile = Path("data") / ("asl_piemonte.csv")
-    asl = pd.read_csv(ifile, sep=";",
+    asl = pd.read_csv(ifile, sep=";", encoding = "ISO-8859-1",
                       dtype={"CODICE COMUNE": "str",
                              "CODICE AZIENDA": "str",
                              "DENOMINAZIONE AZIENDA": "str"},
