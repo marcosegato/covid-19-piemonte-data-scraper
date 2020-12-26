@@ -159,8 +159,8 @@ def carica_dati_da_regione_piemonte():
     ifiles = sorted(Path('data').glob("dati*_da_regione_piemonte.csv"))
     # read all the files into a dataframe array
     dfall = pd.concat((pd.read_csv(ifile, sep=";",
-                                   dtype={"Comune": "string",
-                                          "Codice ISTAT": "string",
+                                   dtype={"Comune": "str",
+                                          "Codice ISTAT": "str",
                                           "Abitanti": "int64",
                                           "Positivi": "int64",
                                           "Rapporto": "float64",
