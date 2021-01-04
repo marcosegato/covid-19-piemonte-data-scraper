@@ -20,11 +20,12 @@ import os
 from pathlib import Path
 import sys
 import time
+from datetime import datetime
 import requests
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException, WebDriverException
 # import chrome_extensions
-ANNO_CORRENTE = "2021"
+ANNO_CORRENTE = str(datetime.now().year)
 UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
       "Chrome/39.0.2171.95 Safari/537.36")
 REQUEST_HEADERS = {'User-Agent': UA}
