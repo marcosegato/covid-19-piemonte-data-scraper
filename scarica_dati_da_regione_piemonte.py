@@ -24,7 +24,7 @@ import requests
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException, WebDriverException
 # import chrome_extensions
-
+ANNO_CORRENTE = "2021"
 UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
       "Chrome/39.0.2171.95 Safari/537.36")
 REQUEST_HEADERS = {'User-Agent': UA}
@@ -65,7 +65,7 @@ def get_istat_code_data(driver, comuni, rowlen, key):
     # javascript code for getting the data associated to each ISTAT code
     get_value_function = "return classificationData[arguments[0]];"
 
-    row = rowlen*[""]
+    row = rowlen * [""]
     item = driver.execute_script(get_value_function, key)
     try:
         item['nome'] = comuni[item['comune_ist']]
@@ -88,14 +88,14 @@ def get_istat_code_data(driver, comuni, rowlen, key):
             row[4] = ratio['value']
             month = positives['giorno'][:2]
             day = positives['giorno'][2:]
-            row[5] = "2020/" + month + "/" + day
+            row[5] = ANNO_CORRENTE + "/" + month + "/" + day
     else:
         for positives in item["POSITIVI"]:
             row[3] = positives['value']
             row[4] = -1
             month = positives['giorno'][:2]
             day = positives['giorno'][2:]
-            row[5] = "2020/" + month + "/" + day
+            row[5] = ANNO_CORRENTE + "/" + month + "/" + day
     return row
 
 
