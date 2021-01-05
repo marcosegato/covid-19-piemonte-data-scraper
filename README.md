@@ -55,7 +55,7 @@ I programmi sopra illustrati leggono e scrivono file nella sottocartella `data`
 | Positivi per comune da Regione Piemonte | dati_aaaa_mm_gg_da_regione_piemonte.csv (1)|
 | Aggregazione di tutti i dati in un unico file | dati_per_tutto_il_periodo_aaaa_mm_gg.csv |
 
-(1) Il file `dati_2020_04_09_da_regione_piemonte.csv` contiene i dati dal 25 marzo al 9 aprile compresi. Mancano i file relativi ai giorni 10 e 11 aprile.
+(1) Il file `dati_2020_04_09_da_regione_piemonte.csv` contiene i dati dal 25 marzo al 9 aprile compresi. Non è stato possibile acquisire i dati relativi alle seguenti giornate: 10-11 aprile 2020, 15-16 maggio 2020, 26-27 luglio 2020, 4 agosto 2020, 13 agosto 2020, 29-31 agosto 2020, 9 settembre 2020, 3 dicembre 2020, 11-12 dicembre, 1-2 gennaio 2021.
 
 ## Altre risorse
 
