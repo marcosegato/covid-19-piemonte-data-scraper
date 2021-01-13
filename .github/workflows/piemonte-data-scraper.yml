@@ -4,7 +4,7 @@ name: piemonte-data-scraper
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '0 19 * * *'
+    - cron:  '30 18 * * *'
 
 jobs:
   # Set the job key.
