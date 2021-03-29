@@ -4,7 +4,7 @@ name: piemonte-data-scraper
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '30 18 * * *'
+    - cron:  '30 17,18 * * *'
 
 jobs:
   # Set the job key.
@@ -36,7 +36,7 @@ jobs:
         run: |
           python scarica_dati_da_regione_piemonte.py
           python aggrega_dati.py
-          
+
       # Commit & Push
       - name: Commit a new report
         run: |
